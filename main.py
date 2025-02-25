@@ -1,14 +1,9 @@
 from fastapi import FastAPI, HTTPException
-from enum import Enum
+from schemas import GenreURLChoices, Band
+
 
 app = FastAPI()
 
-
-class GenreURLChoices(Enum):
-    ROCK = 'rock'
-    ELECTRONIC = 'electronic'
-    METAL = 'metal'
-    HIP_HOP = 'hip-hop'
 
 
 BANDS = [
@@ -25,14 +20,16 @@ async def read_root() ->  dict[str, str]:
 
 
 @app.get('/bands')
-async def bands() -> list[dict]:
-    return BANDS
+async def bands() -> list[Band]:
+    return [
+        Band(**b) for b in BANDS
+    ]
 
 @app.get('/bands/{id}')
-async def bands(id: int) -> dict:
+async def bands(id: int) -> Band:
     for band in BANDS:
         if band['id'] == id:
-            return band
+            return Band(**band)
     raise HTTPException(status_code=404, detail='detail not found') 
 
 
