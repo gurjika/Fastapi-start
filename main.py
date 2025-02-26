@@ -9,7 +9,7 @@ app = FastAPI()
 BANDS = [
     {'id': 1, 'name': 'The Kinks', 'genre': 'Rock'},
     {'id': 2, 'name': 'Aphex Twin', 'genre': 'Electronic'},
-    {'id': 3, 'name': 'Aphex Twin', 'genre': 'Hip-hop'},
+    {'id': 3, 'name': 'Aphex Twin', 'genre': 'Hip-Hop'},
     {'id': 4, 'name': 'Aphex Twin', 'genre': 'Metal'},
 ]
 
@@ -26,7 +26,7 @@ async def bands(
     band_list = [BandWithId(**b) for b in BANDS]
     if genre:
         band_list = [
-            b for b in band_list if b['genre'].lower() == genre.value
+            b for b in band_list if b.genre.value.lower() == genre.value
         ]
     
     if has_albums:
@@ -50,3 +50,10 @@ async def bands_for_genre(genre: GenreURLChoices) -> list[dict]:
         b for b in BANDS if b['genre'].lower() == genre.value
     ]
 
+
+@app.post('/bands')
+async def create_band(band_data: BandCreate) -> BandWithId:
+    id = BANDS[-1]['id'] + 1
+    band = BandWithId(id=id, **band_data.model_dump()).model_dump()
+    BANDS.append(band)  
+    return band
