@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException
-from schemas import GenreURLChoices, Band
-
+from schemas import GenreURLChoices, BandWithId, BandCreate, BandBase
+from typing import Union
 
 app = FastAPI()
 
@@ -20,16 +20,26 @@ async def read_root() ->  dict[str, str]:
 
 
 @app.get('/bands')
-async def bands() -> list[Band]:
-    return [
-        Band(**b) for b in BANDS
-    ]
+async def bands(
+    genre: GenreURLChoices=None, 
+    has_albums: bool = False) -> list[BandWithId]:
+    band_list = [BandWithId(**b) for b in BANDS]
+    if genre:
+        band_list = [
+            b for b in band_list if b['genre'].lower() == genre.value
+        ]
+    
+    if has_albums:
+        band_list = [b for b in band_list if len(b.albums) > 0]
+
+    return band_list
+
 
 @app.get('/bands/{id}')
-async def bands(id: int) -> Band:
+async def bands(id: int) -> BandWithId:
     for band in BANDS:
         if band['id'] == id:
-            return Band(**band)
+            return BandWithId(**band)
     raise HTTPException(status_code=404, detail='detail not found') 
 
 
@@ -39,3 +49,4 @@ async def bands_for_genre(genre: GenreURLChoices) -> list[dict]:
     return [
         b for b in BANDS if b['genre'].lower() == genre.value
     ]
+
